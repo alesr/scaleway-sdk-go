@@ -226,7 +226,26 @@ func (c *Client) do(req *ScalewayRequest, res any) (sdkErr error) {
 		}
 	}()
 
-	sdkErr = hasResponseError(httpResponse)
+	var locality string
+	for _, zone := range AllZones {
+		zoneStr := zone.String()
+		if strings.Contains(req.Path, zoneStr) {
+			locality = zoneStr
+			break
+		}
+	}
+
+	if locality == "" {
+		for _, region := range AllRegions {
+			regionStr := region.String()
+			if strings.Contains(req.Path, regionStr) {
+				locality = regionStr
+				break
+			}
+		}
+	}
+
+	sdkErr = hasResponseError(httpResponse, locality)
 	if sdkErr != nil {
 		return sdkErr
 	}
